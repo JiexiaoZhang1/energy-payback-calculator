@@ -1024,6 +1024,7 @@ function ResultScreen({
           ) : (
             <>
               <AnimatedValue
+                key={`payback-${state.language}`}
                 value={result.paybackYears}
                 formatter={(value) => formatNumber(value, state.language, 1)}
               />{" "}
@@ -1034,6 +1035,7 @@ function ResultScreen({
         <b>
           {copy.annualSavings}{" "}
           <AnimatedValue
+            key={`annual-${state.language}-${state.currency}`}
             value={result.annualSavings}
             formatter={(value) => formatMoney(value, state.language, state.currency)}
           />
@@ -1158,6 +1160,7 @@ function SavingsBuckets({
               <h3>{copy[meta.key]}</h3>
               <strong>
                 <AnimatedValue
+                  key={`${meta.key}-${state.language}-${state.currency}`}
                   value={contribution.annualSavings}
                   formatter={(value) => formatMoney(value, state.language, state.currency)}
                 />
