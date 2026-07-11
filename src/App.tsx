@@ -57,6 +57,13 @@ import type {
 import { formatHour, formatMoney, formatNumber } from "./lib/format";
 
 type Screen = "input" | "result";
+type ApiStatusKey =
+  | "backendOnline"
+  | "backendOffline"
+  | "scenarioLoaded"
+  | "scenarioLoadFailed";
+type ShareStatusKey = "savingScenario" | "linkCopied" | "backendOffline" | "downloadFailed";
+type TariffNoticeKey = "tariffFull" | "tariffUpdated";
 
 const assetIcons: Record<AssetKey, typeof BatteryCharging> = {
   battery: BatteryCharging,
@@ -69,8 +76,8 @@ export function App() {
   const [state, setState] = useState<CalculatorState>(() => loadState());
   const [screen, setScreen] = useState<Screen>("input");
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [shareStatus, setShareStatus] = useState("");
-  const [apiStatus, setApiStatus] = useState("");
+  const [shareStatus, setShareStatus] = useState<ShareStatusKey | "">("");
+  const [apiStatus, setApiStatus] = useState<ApiStatusKey | "">("");
   const [shareLink, setShareLink] = useState("");
   const [serverResult, setServerResult] = useState<CalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -101,11 +108,11 @@ export function App() {
         });
         setServerResult(scenario.result);
         setShareLink(window.location.href);
-        setApiStatus(getCopy(scenario.state.language).scenarioLoaded);
+        setApiStatus("scenarioLoaded");
         setScreen("result");
       })
       .catch(() => {
-        setApiStatus(copy.scenarioLoadFailed);
+        setApiStatus("scenarioLoadFailed");
       });
     return () => {
       isActive = false;
@@ -146,10 +153,10 @@ export function App() {
     try {
       const remoteResult = await calculateOnServer(state);
       setServerResult(remoteResult);
-      setApiStatus(copy.backendOnline);
+      setApiStatus("backendOnline");
     } catch {
       setServerResult(localResult);
-      setApiStatus(copy.backendOffline);
+      setApiStatus("backendOffline");
     } finally {
       setIsCalculating(false);
       setScreen("result");
@@ -158,7 +165,7 @@ export function App() {
 
   const handleShare = async () => {
     try {
-      setShareStatus(copy.savingScenario);
+      setShareStatus("savingScenario");
       const scenario = await saveScenario(state, result);
       const url = new URL(window.location.href);
       url.searchParams.set("scenario", scenario.id);
@@ -166,13 +173,13 @@ export function App() {
       setShareLink(nextLink);
       await copyText(nextLink).catch(() => undefined);
       await downloadShareImage(state, result);
-      setShareStatus(copy.linkCopied);
+      setShareStatus("linkCopied");
     } catch {
       try {
         await downloadShareImage(state, result);
-        setShareStatus(copy.backendOffline);
+        setShareStatus("backendOffline");
       } catch {
-        setShareStatus(copy.downloadFailed);
+        setShareStatus("downloadFailed");
       }
     }
     window.setTimeout(() => setShareStatus(""), 2400);
@@ -201,9 +208,9 @@ export function App() {
               key="result"
               state={state}
               result={result}
-              apiStatus={apiStatus}
+              apiStatus={apiStatus ? copy[apiStatus] : ""}
               shareLink={shareLink}
-              shareStatus={shareStatus}
+              shareStatus={shareStatus ? copy[shareStatus] : ""}
               onShare={handleShare}
               setScreen={setScreen}
             />
@@ -339,7 +346,7 @@ function TariffEditor({
   const [drawerDraft, setDrawerDraft] = useState<TariffDrawerDraft | null>(null);
   const [activeBlockId, setActiveBlockId] = useState("");
   const [flashRange, setFlashRange] = useState<FlashRange | null>(null);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<TariffNoticeKey | "">("");
   const reducedMotion = useReducedMotion();
   const copy = getCopy(state.language);
   const normalizedBlocks = useMemo(() => normalizeTariffBlocksForEditing(blocks), [blocks]);
@@ -358,7 +365,7 @@ function TariffEditor({
 
   const openAdd = () => {
     if (isFull) {
-      setNotice(copy.tariffFull);
+      setNotice("tariffFull");
       window.setTimeout(() => setNotice(""), 2200);
       return;
     }
@@ -400,7 +407,7 @@ function TariffEditor({
       startHour: drawerDraft.startHour,
       endHour: drawerDraft.endHour,
     });
-    setNotice(copy.tariffUpdated);
+    setNotice("tariffUpdated");
     window.setTimeout(() => setFlashRange(null), 1200);
     window.setTimeout(() => setNotice(""), 2200);
   };
@@ -410,7 +417,7 @@ function TariffEditor({
     onChange(deleteTariffBlock(normalizedBlocks, drawerDraft.blockId));
     setDrawerDraft(null);
     setActiveBlockId("");
-    setNotice(copy.tariffUpdated);
+    setNotice("tariffUpdated");
     window.setTimeout(() => setNotice(""), 2200);
   };
 
@@ -485,7 +492,7 @@ function TariffEditor({
             exit={{ opacity: 0, y: -6 }}
             transition={quick}
           >
-            {notice}
+            {copy[notice]}
           </motion.div>
         ) : null}
       </AnimatePresence>
