@@ -33,6 +33,32 @@ describe("App flow", () => {
     expect(screen.getAllByText(/€/).length).toBeGreaterThan(0);
   });
 
+  it("retranslates result status when the language changes", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Calculate payback" }));
+    expect(await screen.findByText("Calculated by the backend")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Language"), { target: { value: "zh-CN" } });
+
+    expect(screen.getByRole("heading", { name: "预计回本时间" })).toBeInTheDocument();
+    expect(screen.getByText("已用后端完成计算")).toBeInTheDocument();
+    expect(screen.queryByText("Calculated by the backend")).not.toBeInTheDocument();
+  });
+
+  it("retranslates a visible tariff notice when the language changes", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /00:00-06:00/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(screen.getByText("Price period updated")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Language"), { target: { value: "zh-CN" } });
+
+    expect(screen.getByText("电价时段已更新")).toBeInTheDocument();
+    expect(screen.queryByText("Price period updated")).not.toBeInTheDocument();
+  });
+
   it("opens tariff editing, adds and deletes a price period, and keeps 24:00 readable", () => {
     render(<App />);
 
