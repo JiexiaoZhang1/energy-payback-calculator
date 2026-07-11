@@ -46,6 +46,12 @@ Development run:
 npm run dev:full
 ```
 
+Static online demo:
+
+```text
+https://jiexiaozhang1.github.io/energy-payback-calculator/
+```
+
 Optional static GitHub Pages build:
 
 ```bash

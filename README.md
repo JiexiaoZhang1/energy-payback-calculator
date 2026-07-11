@@ -20,6 +20,10 @@ The basic idea is simple: use or charge electricity when it is cheap, avoid buyi
 
 ## Demo Options / 展示方式
 
+Static online demo:
+
+https://jiexiaozhang1.github.io/energy-payback-calculator/
+
 Local full-stack demo:
 
 ```bash
