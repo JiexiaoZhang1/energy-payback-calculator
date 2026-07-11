@@ -43,6 +43,8 @@ describe("App flow", () => {
 
     expect(screen.getByRole("heading", { name: "预计回本时间" })).toBeInTheDocument();
     expect(screen.getByText("已用后端完成计算")).toBeInTheDocument();
+    expect(screen.getByLabelText("回本")).toHaveTextContent("每年约省 ¥11,173");
+    expect(screen.getByLabelText("回本")).not.toHaveTextContent("CN¥");
     expect(screen.queryByText("Calculated by the backend")).not.toBeInTheDocument();
   });
 
